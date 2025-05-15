@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Profile</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+</head>
+<body class="container bg-dark" style="font-family: Arial, Helvetica, sans-serif">
+    <div class="container">
+        <nav class="nav justify-content-center">
+            <a class="nav-link" href="index.html" aria-current="page">Home</a>
+            <a class="nav-link active" href="myProfile.html">My Profile</a>
+            <a class="nav-link" id="logIn-btn" href="#">Login</a>
+            <a class="nav-link" href="leaderboards.html">LeaderBoards</a>
+        </nav>
+        <div class="container bg-info" id="page">
+
+         
+            <div id="profile" class="container-fluid" style="width:75%">
+                <div class="container" style="float:left;margin-right:5px;width:300px" id="user-profile">
+                    <img class="img" style="float:left;width:100px;border-radius:16px;margin:5px;" id="profileIcon">
+                    <span style="margin-top:5px;margin-left:5px;" class="text-primary" id="gameName">gameName</span><br>
+                    <span style="margin-left:5px;" class="text-primary" id="tagLine">tagLine</span><br>
+                    <span style="margin-left:5px;" class="text-primary" id="level">level</span><br>
+                </div>
+                <div class="container" id="rank-section" style="width:300px;overflow:hidden;">
+                    <img class="img" id="tier-icon" style="width:100px;float:left;margin:5px;">
+                    <span style="margin-top:5px;margin-left:5px;" class="text-secondary" id = "tier">Tier</span><br>
+                    <span style="margin-left:5px;" class="text-secondary" id = "rank">Rank</span><br>
+                    <span style="margin-left:5px;" class="text-secondary" id = "leaguePoints">LP</span><br>
+                </div>
+            </div>
+            <div id="matchHistory" style="clear:left;" class="container-fluid" style="width:75%">
+
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+<style>
+    .hist-name{
+        cursor:pointer;
+    }
+    .hist-name:hover{
+        color:wheat
+    }
+</style>
+<script>
+    getData();
+    checkLogin();
+    
+    let Player;
+    async function showMatchDetails(id){
+        let xhttp = new XMLHttpRequest()
+        xhttp.onreadystatechange = function(){
+            if(this.status == 200 && this.readyState == 4){
+                window.location = 'matchStats.html';
+            }
+        }
+        xhttp.open('GET','lol/set_match_id/' + id, true);
+        xhttp.send();
+    }
+    async function getData(){
+        let xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function(){
+            if(this.status == 200 && this.readyState == 4){
+                let data = JSON.parse(this.responseText)
+                player = data;
+                showSummoner(data);
+                console.log(data);
+                getMatchHistory(data);
+
+            }   
+        }
+        xhttp.open('GET','lol/get_ranked_summoner',true);
+        xhttp.send();
+    }
+    async function getMatchHistory(data){
+        let xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function(){
+            if(this.status == 200 && this.readyState == 4){
+                let matchHistory = JSON.parse(this.responseText);
+                console.log(matchHistory);
+                showMatchHistory(matchHistory);
+            }
+        }
+        console.log(data);
+        xhttp.open('GET','lol/get_match_history/' + data.puuid,true);
+        xhttp.send();
+    }
+
+    function showMatchHistory(data){
+        let i = 0;
+        let m = ''
+        data.forEach(element => {
+            if(element != null){
+                let match = '<div style="margin-bottom:5px;border-radius:8px;padding:5px;" id ="m_'+i+'" class="container-fluid">'
+                let temp = '<div class="container" style="float:left;width:150px;overflow:hidden;margin-left:5px;margin-right:15px;" id= "p_'+ i + '">'
+                temp += '<span style="width:150px;overflow:hidden;" id="n' + i + '">' + element.matchType + '</span>'
+                temp +=  '<span id="s_'+i+'" style="font-size:25px;overflow:hidden;float:left:width:100px;"></span></div>' 
+                match += '<img style="float:left; width:100px;" id ="i_'+i+'">'
+                match +=temp;
+                match += '<div id="items_'+ i +'" style="float:left;width:120px;" class="container"></div>'
+                let champDiv = '<div style="" class ="container">'
+                let champLeft = '<div style="float:left;width:200px;;;" >'
+                let champRight ='<div style="width:200px;overflow:hidden;" >'
+                let j = 0;
+                element.playerStats.forEach(el=>{
+                    if(j < 5) champLeft += '<img style="width:25px;" src="https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/'+ el.championId +'.png"><span class="hist-name" onclick="viewProfile(`'+el.gameName+'`,`'+el.tagLine+'`)" style="font-size:15px;width:200px;;">' + el.gameName + '</span><br>'
+                    else champRight += '<img style="width:25px;" src="https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/'+ el.championId +'.png"><span class="hist-name" onclick="viewProfile(`'+el.gameName+'`,`'+el.tagLine+'`)" style="font-size:15px">' + el.gameName + '</span><br>'
+                    j++;
+                })
+                champLeft += '</div>'
+                champRight+'</div>'
+                champDiv += champLeft + champRight + '</div>';
+                match += champDiv;
+                match += '</div>'
+                m += match;
+                m += '<button class="btn btn-primary" onclick= "showMatchDetails(`' + element.matchId + '`)">Show Details</button>'
+                m += '</div>'
+                i++;
+                }
+            
+        });  
+        document.getElementById('matchHistory').innerHTML = m;
+       loadMatchData(data)
+    }
+    function loadMatchData(data){
+        let i = 0;
+        data.forEach(element=>{
+            if(element != null){
+                element.playerStats.forEach(el=>{
+                if(player.puuid == el.puuid){
+                    if(el.win) document.getElementById('m_' + i).style.backgroundColor = 'green';
+                    else document.getElementById('m_' + i).style.backgroundColor = 'red';
+                    document.getElementById('s_' + i).innerText = el.kills + '/' + el.deaths + '/' + el.assists;
+                    document.getElementById('s_' + i).style.float = 'left';
+                    document.getElementById('s_' + i).style.overflow = 'hidden';
+                    document.getElementById('s_' + i).style.width = '150px';
+                    document.getElementById('s_' + i).style.marginTop = '10px';
+                    document.getElementById('i_'+i).src = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/"+ el.championId +".png";
+                    let temp1 = '';
+                    for(let j = 0; j < 7; j++){
+                        
+                        if(el.items[j] != 0)temp1 += "<img style='width:20px' src='https://static.bigbrain.gg/assets/lol/riot_static/15.1.1/img/item/"+ el.items[j] + ".png'>"
+                        else temp1 += '<div style="margin-top:3px;width:20px;height:20px;background-color:gray;float:left"></div>'
+                        if(j==2) temp1 += '<br>'
+                    }
+                    
+                    document.getElementById('items_' + i).innerHTML = temp1;
+                    
+                }
+                
+            })
+            i++;
+            }
+            
+        })
+    }
+    function showSummoner(data){
+        document.getElementById('gameName').innerText = data.gameName;
+        document.getElementById('tagLine').innerText = data.tagLine;
+        document.getElementById('level').innerText = 'level: ' + data.level;
+        document.getElementById('profileIcon').src = 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/profile-icons/'+ data.summonerIconId +'.jpg'
+        
+        document.getElementById('tier').innerText = 'tier: ' + data.tier;
+        document.getElementById('rank').innerText = 'rank: ' + data.rank;
+        document.getElementById('leaguePoints').innerText = 'leaguePoints: ' + data.leaguePoints;
+        document.getElementById('tier-icon').src = 'https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-shared-components/global/default/' + data.tier.toLowerCase() +'.png'
+    
+    }
+    function viewProfile(gameName, tagLine){
+        let xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function(){
+            if(this.status == 200 && this.readyState == 4){
+                let response = JSON.parse(this.responseText);
+                window.location = "profile.html";
+            }
+        }
+        xhttp.open('GET','lol/ranked_summoner/'+gameName+'/'+tagLine,true)
+        xhttp.send();
+    }
+    function checkLogin(){
+        let xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function(){
+            if(this.status == 200 && this.readyState == 4){
+                console.log(this.responseText);
+                if(this.responseText != ''){
+                    let res = JSON.parse(this.responseText)
+                    //user = res;
+                    document.getElementById('logIn-btn').className = 'nav-link d-none';
+                
+                }
+                else {
+                    document.getElementById('logIn-btn').className = 'nav-link';
+                }
+            }
+        }
+        xhttp.open('GET', '/checkLogin', true);
+        xhttp.send();
+    }
+</script>
