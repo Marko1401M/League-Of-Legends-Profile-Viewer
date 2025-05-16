@@ -1,5 +1,5 @@
 # League-Of-Legends-Profile-Viewer
- A Web Application that displays 
+ A Web Application that displays your League Of Legends profile.
 
 ## Tech stack
 
